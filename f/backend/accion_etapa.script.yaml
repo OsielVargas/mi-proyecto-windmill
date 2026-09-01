@@ -1,0 +1,82 @@
+summary: ''
+description: ''
+lock: '!inline f/backend/accion_etapa.script.lock'
+kind: script
+schema:
+  $schema: https://json-schema.org/draft/2020-12/schema
+  type: object
+  properties:
+    accion:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    area_seguimiento:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    areas_seguimiento:
+      type: ''
+      description: ''
+      default: null
+    comentario_texto:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    comentarios:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    documento_nombre:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    documento_url:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    fecha_compromiso:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    operation_id:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    pendiente_id:
+      type: integer
+      description: ''
+      default: null
+    pendiente_texto:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_email:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_rol:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_username:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+  required: []

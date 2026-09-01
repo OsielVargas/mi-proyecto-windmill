@@ -1,0 +1,50 @@
+summary: ''
+description: ''
+lock: '!inline f/backend/crear.script.lock'
+kind: script
+schema:
+  $schema: https://json-schema.org/draft/2020-12/schema
+  type: object
+  properties:
+    datos_iniciales:
+      type: object
+      description: ''
+      default: null
+      properties: {}
+    fecha_operacion:
+      type: string
+      description: ''
+      default: null
+      originalType: string
+    monto:
+      type: number
+      description: ''
+      default: 0
+    nombre_solicitante:
+      type: string
+      description: ''
+      default: null
+      originalType: string
+    producto:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_email:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_rol:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_username:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+  required:
+    - nombre_solicitante
+    - fecha_operacion

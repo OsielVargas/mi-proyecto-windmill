@@ -1,0 +1,29 @@
+summary: ''
+description: listar
+lock: '!inline f/backend/listar.script.lock'
+kind: script
+schema:
+  $schema: https://json-schema.org/draft/2020-12/schema
+  type: object
+  properties:
+    modo:
+      type: string
+      description: ''
+      default: mis_tareas
+      originalType: string
+    usuario_email:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_rol:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+    usuario_username:
+      type: string
+      description: ''
+      default: ''
+      originalType: string
+  required: []

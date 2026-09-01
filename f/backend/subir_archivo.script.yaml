@@ -1,0 +1,26 @@
+summary: ''
+description: ''
+lock: '!inline f/backend/subir_archivo.script.lock'
+kind: script
+schema:
+  $schema: https://json-schema.org/draft/2020-12/schema
+  type: object
+  properties:
+    dominio_base:
+      type: string
+      description: ''
+      default: https://localhost
+      originalType: string
+    file_base64:
+      type: string
+      description: ''
+      default: null
+      originalType: string
+    nombre_archivo:
+      type: string
+      description: ''
+      default: null
+      originalType: string
+  required:
+    - file_base64
+    - nombre_archivo
