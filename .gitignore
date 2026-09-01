@@ -1,0 +1,45 @@
+# Windmill
+wmill-lock.yaml
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE / editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+
+# Logs
+logs/
+*.log
+
+# Dependencias locales
+dist/
+build/
+.cache/
+
+# NO subir credenciales ni tokens nunca!
+secrets.yaml
+credentials.json
+*.key
+*.pem

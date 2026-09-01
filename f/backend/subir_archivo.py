@@ -2,6 +2,7 @@ import base64
 import uuid
 import mimetypes
 import boto3
+import os
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
@@ -10,15 +11,17 @@ def main(
     nombre_archivo: str,
     dominio_base: str = "https://localhost"
 ):
-    # Credenciales hardcodeadas (cámbialas por las tuyas reales)
-    access_key = "9F18526B347D9A3DE993"  # Tu access key de Filebase
-    secret_key = "ClFUfBk2cvzxnuCPDAuF3ahFm9cL8RfntJFE83GB"  # Tu secret key de Filebase
-    bucket = "windmill"
-    endpoint = "https://s3.filebase.io"
-    region = "auto"
+    access_key = os.environ.get("FILEBASE_ACCESS_KEY", "")
+    secret_key = os.environ.get("FILEBASE_SECRET_KEY", "")
+    bucket = os.environ.get("FILEBASE_BUCKET", "windmill")
+    endpoint = os.environ.get("FILEBASE_ENDPOINT", "https://s3.filebase.io")
+    region = os.environ.get("FILEBASE_REGION", "us-east-1")
 
     if not access_key or not secret_key:
-        raise Exception("Faltan credenciales de Filebase")
+        raise Exception(
+            "Faltan credenciales de Filebase. "
+            "Configura las variables de entorno: FILEBASE_ACCESS_KEY, FILEBASE_SECRET_KEY"
+        )
 
     s3_client = boto3.client(
         's3',
