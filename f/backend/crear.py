@@ -1,7 +1,15 @@
 import os
-import wmill
 import uuid
 import json
+import psycopg2
+import psycopg2.extras
+
+DB_CONFIG = {
+    'host': 'evargaz-db-1',
+    'database': 'windmill',
+    'user': 'postgres',
+    'password': 'changeme'
+}
 
 ETAPAS = {
     1: {'nombre': 'Registro de operación', 'rol': 'cobranza', 'tiempo_horas': None},
@@ -36,7 +44,6 @@ def main(
     if not nombre_solicitante or not nombre_solicitante.strip():
         return {"error": "El nombre del solicitante es requerido"}
 
-    db = wmill.datatable('operaciones_ok')
     if datos_iniciales is None:
         datos_iniciales = {}
 
@@ -45,25 +52,30 @@ def main(
     datos_iniciales["creado_por_rol"] = usuario_rol
 
     nuevo_id = uuid.uuid4().hex
-
-    # CORREGIDO: Incluir rol_responsable basado en la etapa 1
     etapa_inicial = 1
     info_etapa = get_etapa_info(etapa_inicial)
     rol_responsable = info_etapa['rol']
 
+    conn = psycopg2.connect(**DB_CONFIG)
     try:
-        result = db.query(
+        cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor.execute(
             '''INSERT INTO operaciones_ok (
                 id, nombre_solicitante, monto, producto, fecha_operacion,
                 estado, etapa_actual, rol_responsable,
                 aprobaciones, documentos, pendientes, datos_extra, fecha_creacion
-            ) VALUES ($1, $2, $3, $4, CAST($5 AS DATE), $6, $7, $8, $9::jsonb, $10::jsonb, $11::jsonb, $12::jsonb, NOW())
+            ) VALUES (%s, %s, %s, %s, CAST(%s AS DATE), %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb, NOW())
             RETURNING id, nombre_solicitante, monto, producto, fecha_operacion, estado, etapa_actual, rol_responsable, fecha_creacion''',
-            nuevo_id, nombre_solicitante.strip(), float(monto), producto, fecha_operacion,
+            (nuevo_id, nombre_solicitante.strip(), float(monto), producto, fecha_operacion,
             'activa', etapa_inicial, rol_responsable,
-            '[]', '[]', '[]', json.dumps(datos_iniciales)
-        ).fetch_one()
-        return {"status": "success", "message": "Operación registrada", "data": result}
+            '[]', '[]', '[]', json.dumps(datos_iniciales))
+        )
+        result = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+        return {"status": "success", "message": "Operación registrada", "data": dict(result)}
     except Exception as e:
+        conn.rollback()
         return {"error": f"Error al crear operación: {str(e)}"}
-# v2.1 - Tue Sep  1 16:39:21 CST 2026
+    finally:
+        conn.close()

@@ -2,7 +2,6 @@ const WORKSPACE = 'disposiciones-usuarios-reales';
 const DOMAIN = typeof window !== 'undefined' ? window.location.origin : '';
 
 // Token leido desde variable de entorno de Windmill
-// En Windmill: Variables -> Nueva variable 'WMILL_TOKEN' -> tipo Secreto
 const TOKEN = (typeof process !== 'undefined' && process.env?.WMILL_TOKEN)
   || (typeof window !== 'undefined' && (window as any).__WMILL_TOKEN__)
   || '';

@@ -1,19 +1,19 @@
-import wmill
+import psycopg2
+
+DB_CONFIG = {
+    'host': 'evargaz-db-1',
+    'database': 'windmill',
+    'user': 'postgres',
+    'password': 'changeme'
+}
 
 def main():
-    db = wmill.datatable('operaciones_ok')
-    
-    # Contar
-    count_rows = db.query('SELECT COUNT(*) as total FROM operaciones_ok').fetch()
-    total = count_rows[0]['total'] if count_rows else 0
-    print(f"🗑️  Borrando {total} operación(es)...")
-    
-    # Borrar
-    db.query('DELETE FROM operaciones_ok')
-    
-    # Verificar
-    verify = db.query('SELECT COUNT(*) as total FROM operaciones_ok').fetch()
-    restantes = verify[0]['total'] if verify else 0
-    
-    print(f"✅ Borrado completado. Operaciones restantes: {restantes}")
-    return {"status": "ok", "borradas": total, "restantes": restantes}
+    conn = psycopg2.connect(**DB_CONFIG)
+    try:
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM operaciones_ok')
+        conn.commit()
+        cursor.close()
+        return {'status': 'success', 'message': 'Todas las operaciones han sido eliminadas'}
+    finally:
+        conn.close()
