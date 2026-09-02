@@ -275,7 +275,7 @@ const App = () => {
   // Mesa de control puede actuar en cualquier operación activa (supervisión)
   const puedeVerPanel = selectedOperation && (
     (selectedOperation.estado === 'activa' && (esResponsable || esMesaControl || tienePendientesAsignados)) ||
-    (selectedOperation.estado === 'condicionada' && (esMesaControl || tienePendientesAsignados))
+    (selectedOperation.estado === 'condicionada' && (esResponsable || esMesaControl || tienePendientesAsignados))
   );
 
   const requestSort = (key: string) => {
