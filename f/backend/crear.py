@@ -66,3 +66,4 @@ def main(
         return {"status": "success", "message": "Operación registrada", "data": result}
     except Exception as e:
         return {"error": f"Error al crear operación: {str(e)}"}
+# v2.1 - Tue Sep  1 16:39:21 CST 2026
