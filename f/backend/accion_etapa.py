@@ -103,10 +103,18 @@ def main(
         es_mesa_control = permisos['es_mesa_control']
         puede_actuar_menor = permisos['puede_actuar_menor']
 
-        if accion in ('aprobar', 'avanzar', 'rechazar', 'registrar_pendiente'):
-            if not (es_responsable or es_mesa_control):
-                return {'error': 'No tienes permisos para esta acción en esta etapa.'}
+        # ✅ CORREGIDO: Solo el rol responsable puede aprobar/avanzar/rechazar
+        # Mesa de control NO puede avanzar etapas que no sean la suya
+        if accion in ('aprobar', 'avanzar', 'rechazar'):
+            if not es_responsable:
+                return {'error': 'Solo el rol responsable de esta etapa puede aprobar, avanzar o rechazar.'}
 
+        # Registrar pendiente: solo mesa de control
+        if accion == 'registrar_pendiente':
+            if not es_mesa_control:
+                return {'error': 'Solo Mesa de Control puede registrar pendientes.'}
+
+        # Acciones menores: comentar, adjuntar
         if accion in ('registrar_comentario', 'adjuntar_doc'):
             if not puede_actuar_menor:
                 return {'error': 'No tienes permisos para realizar esta acción.'}
@@ -163,13 +171,12 @@ def main(
 
             pendientes.append(nuevo)
 
-            # NO cambiar rol_responsable. El flujo sigue con el rol actual.
             cursor.execute(
                 'UPDATE operaciones_ok SET pendientes = %s::jsonb, estado = %s WHERE id = %s RETURNING *',
                 (json.dumps(pendientes), 'condicionada', operation_id)
             )
             conn.commit()
-            return {'status': 'ok', 'message': 'Pendiente registrado. El flujo puede continuar.'}
+            return {'status': 'ok', 'message': 'Pendiente registrado.'}
 
         if accion == 'notificar_atencion':
             for p in pendientes:
@@ -206,7 +213,7 @@ def main(
                         (json.dumps(aprobaciones), json.dumps(pendientes), operation_id)
                     )
                     conn.commit()
-                    return {'status': 'ok', 'message': 'Atención notificada a Mesa de Control. En espera de liberación.'}
+                    return {'status': 'ok', 'message': 'Atención notificada a Mesa de Control.'}
             return {'error': 'Pendiente no encontrado o ya resuelto'}
 
         if accion == 'liberar_pendiente':
@@ -219,13 +226,12 @@ def main(
                     p['resuelto_por'] = usuario_username or usuario_rol
                     break
 
-            # NO cambiar rol_responsable. Solo marcar como resuelto.
             cursor.execute(
                 'UPDATE operaciones_ok SET pendientes = %s::jsonb WHERE id = %s RETURNING *',
                 (json.dumps(pendientes), operation_id)
             )
             conn.commit()
-            return {'status': 'ok', 'message': 'Pendiente liberado. El flujo sigue sin detenerse.'}
+            return {'status': 'ok', 'message': 'Pendiente liberado.'}
 
         if accion in ('aprobar', 'avanzar'):
             aprobaciones.append({
@@ -244,7 +250,6 @@ def main(
                 nueva_etapa = etapa_actual + 1
                 nueva_info = get_etapa_info(nueva_etapa)
 
-                # Al avanzar, SIEMPRE va al rol de la nueva etapa. Los pendientes no bloquean.
                 cursor.execute(
                     'UPDATE operaciones_ok SET etapa_actual = %s, rol_responsable = %s, aprobaciones = %s::jsonb WHERE id = %s RETURNING *',
                     (nueva_etapa, nueva_info['rol'], json.dumps(aprobaciones), operation_id)
