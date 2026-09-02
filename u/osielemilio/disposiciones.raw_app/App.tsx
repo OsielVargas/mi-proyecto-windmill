@@ -273,7 +273,10 @@ const App = () => {
   }, [selectedOperation, usuarioReal]);
 
   // Mesa de control puede actuar en cualquier operación activa (supervisión)
-  const puedeVerPanel = selectedOperation?.estado === 'activa' && (esResponsable || esMesaControl || tienePendientesAsignados);
+  const puedeVerPanel = selectedOperation && (
+    (selectedOperation.estado === 'activa' && (esResponsable || esMesaControl || tienePendientesAsignados)) ||
+    (selectedOperation.estado === 'condicionada' && (esMesaControl || tienePendientesAsignados))
+  );
 
   const requestSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -725,7 +728,7 @@ const App = () => {
                     )}
 
                     {/* Botones de decisión MAYOR: solo para el rol responsable de la etapa */}
-                    {esResponsable && (
+                    {(esResponsable || esMesaControl) && selectedOperation.estado !== 'rechazada' && selectedOperation.estado !== 'finalizada' && (
                       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 20 }}>
                         <button onClick={() => ejecutarAccion('aprobar')} disabled={actionLoading} style={btnSuccess}>{actionLoading ? 'Procesando...' : (selectedOperation.etapa_actual < 9 ? '✅ Autorizar y Avanzar' : '✅ Finalizar')}</button>
                         <button onClick={() => ejecutarAccion('rechazar')} disabled={actionLoading} style={btnDanger}>{actionLoading ? 'Procesando...' : '❌ Rechazar'}</button>

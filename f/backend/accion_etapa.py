@@ -160,15 +160,16 @@ def main(
 
             if es_mesa_control and fecha_compromiso:
                 nuevo['fecha_compromiso'] = fecha_compromiso
-                op['estado'] = 'condicionada'
 
             pendientes.append(nuevo)
+
+            # NO cambiar rol_responsable. El flujo sigue con el rol actual.
             cursor.execute(
                 'UPDATE operaciones_ok SET pendientes = %s::jsonb, estado = %s WHERE id = %s RETURNING *',
-                (json.dumps(pendientes), op.get('estado', 'activa'), operation_id)
+                (json.dumps(pendientes), 'condicionada', operation_id)
             )
             conn.commit()
-            return {'status': 'ok', 'message': 'Pendiente registrado'}
+            return {'status': 'ok', 'message': 'Pendiente registrado. El flujo puede continuar.'}
 
         if accion == 'notificar_atencion':
             for p in pendientes:
@@ -192,7 +193,7 @@ def main(
                         'etapa_nombre': info['nombre'],
                         'usuario': usuario or usuario_username or usuario_email,
                         'decision': 'comentario',
-                        'comentarios': comentario_texto or f"📢 {usuario_username or usuario_rol} reporta atención del pendiente: {p.get('texto')}",
+                        'comentarios': comentario_texto or f'📢 {usuario_username or usuario_rol} reporta atención del pendiente: {p.get("texto")}',
                         'fecha': ahora
                     })
 
@@ -217,14 +218,14 @@ def main(
                     p['fecha_resolucion'] = ahora
                     p['resuelto_por'] = usuario_username or usuario_rol
                     break
-            tiene_activos = any(not p.get('resuelto', False) and (p.get('fecha_compromiso') or p.get('areas_seguimiento') or p.get('area_seguimiento')) for p in pendientes)
-            nuevo_estado = 'activa' if (not tiene_activos and op.get('estado') == 'condicionada') else op.get('estado', 'activa')
+
+            # NO cambiar rol_responsable. Solo marcar como resuelto.
             cursor.execute(
-                'UPDATE operaciones_ok SET estado = %s, pendientes = %s::jsonb WHERE id = %s RETURNING *',
-                (nuevo_estado, json.dumps(pendientes), operation_id)
+                'UPDATE operaciones_ok SET pendientes = %s::jsonb WHERE id = %s RETURNING *',
+                (json.dumps(pendientes), operation_id)
             )
             conn.commit()
-            return {'status': 'ok', 'message': 'Pendiente liberado por Mesa de Control'}
+            return {'status': 'ok', 'message': 'Pendiente liberado. El flujo sigue sin detenerse.'}
 
         if accion in ('aprobar', 'avanzar'):
             aprobaciones.append({
@@ -242,12 +243,14 @@ def main(
             else:
                 nueva_etapa = etapa_actual + 1
                 nueva_info = get_etapa_info(nueva_etapa)
+
+                # Al avanzar, SIEMPRE va al rol de la nueva etapa. Los pendientes no bloquean.
                 cursor.execute(
                     'UPDATE operaciones_ok SET etapa_actual = %s, rol_responsable = %s, aprobaciones = %s::jsonb WHERE id = %s RETURNING *',
                     (nueva_etapa, nueva_info['rol'], json.dumps(aprobaciones), operation_id)
                 )
                 conn.commit()
-                return {'status': 'ok', 'message': f"Avanzado a etapa {nueva_etapa}: {nueva_info['nombre']}"}
+                return {'status': 'ok', 'message': f'Avanzado a etapa {nueva_etapa}: {nueva_info["nombre"]}'}
 
         if accion == 'rechazar':
             aprobaciones.append({
@@ -262,6 +265,6 @@ def main(
             conn.commit()
             return {'status': 'ok', 'message': 'Operación rechazada'}
 
-        return {'error': f"Acción no reconocida: {accion}"}
+        return {'error': f'Acción no reconocida: {accion}'}
     finally:
         conn.close()
